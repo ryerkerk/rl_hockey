@@ -1,0 +1,11 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Pycharm stuff
+.idea/
+
+# Local notes and functions that need refactoring
+logs/
+to_update/
