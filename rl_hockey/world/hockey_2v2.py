@@ -143,6 +143,11 @@ class Hockey2v2(World):
         if puck_x[0] < self.b + self.goal_depth - self.puck.shape.r:  # Right team (p2) scored
             self.player_list[0].score = self.player_list[0].score - 1
 
+        # Large penalty if puck escapes world top or bottom.
+        if puck_x[1] < 0 or puck_x[1] > h:
+            self.player_list[0].score = self.player_list[0].score - 2
+            self.player_list[1].score = self.player_list[1].score - 2
+
         self.player_list[0].score = self.player_list[0].score*self.score_scale
         self.player_list[1].score = self.player_list[0].score
 
@@ -239,3 +244,12 @@ class Hockey2v2(World):
             p[:] = p[:]/1000        # Scale values by size of world.
 
         return [p1_state, p2_state, p3_state, p4_state]
+
+    def get_impact(self):
+        """
+        Get potential impact of each player.
+
+        Impact defined here as w/(0.5w + d), where d is player distance to puck and w is width of world.
+        """
+        w, _ = self.world_size
+        return [w/(0.5*w + np.sqrt(np.sum((p.obj.x - self.puck.x)**2))) for p in self.player_list]

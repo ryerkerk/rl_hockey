@@ -1,5 +1,6 @@
 from rl_hockey.world import *
-from rl_hockey.controller import (DDDQN, NaivePrioritizedBuffer, SelfPlayController)
+from rl_hockey.controller import (DoubleDQN, DQN, Buffer, NaivePrioritizedBuffer, SelfPlayController, ImpactPrioritizedMemory)
+import os
 import time
 import tkinter as tk
 import numpy as np
@@ -7,7 +8,7 @@ from rl_hockey.run import run
 
 # BASE SETTINGS
 PREVIOUS_MODEL = ''             # If no previous model is set then a new one is created
-NUM_ITERATIONS = 200_000        # Number of iterations that will be run
+NUM_ITERATIONS = 100_000        # Number of iterations that will be run
 TRAIN_STEPS_PER_TRIAL = 100     # Number of training steps per controller, per iteration
 DRAW_SCALE = 0.5                # Scale at which world will be drawn on screen
 EPS_DECAY = 500_000             # Decay rate of EPS in DQN
@@ -19,27 +20,52 @@ LEARN_RATE = 2e-3               # Learning rate of model
 BETA_START = 0.4                # Initial beta value used by prioritized memory
 BETA_MAX = 0.5                  # Final beta value
 BETA_FRAMES = 1000              # Transition period from start to max veta value
-VIEW_RUN = True                # Set to True to visualize the model
-WORLD = 'Hockey1v1'             # World to use, available worlds:
+VIEW_RUN = False                # Set to True to visualize the model
+WORLD = 'Hockey1v1'    # World to use, available worlds:
                                 # Hockey1v1, Hockey1v1Heuristic, Hockey2v2, Hockey2v2Roles
+CONTROLLER = 'double_dqn'        # dqn, double_dqn
+NETWORK = 'dueling_feed_forward'  # feed_forward, dueling_feed_forward
+OPTIMIZER = 'adagrad'            # adagrad, adam, rmsprop, sgd
+MEMORY = 'prioritized'          # buffer, prioritized, impact_prioritized
 
 # Make changes to settings here
 # Remove this line to train a new model, rather than visualizing a previous one
 PREVIOUS_MODEL = './models/06_20_Hockey_1v1' # Do not include file extension on previous model
+VIEW_RUN = True
 
-# beta used by the priorized memory
 beta_by_frame = lambda frame_idx: min(BETA_MAX, BETA_START + frame_idx * (1.0 - BETA_START) / BETA_FRAMES)
 
 if __name__ == "__main__":
     # Set up world and required controllers.
+    if CONTROLLER == 'dqn':
+        print('Using dqn trainer')
+        controller = DQN
+    elif CONTROLLER == 'double_dqn':
+        print('Using double_dqn dqn trainer')
+        controller = DoubleDQN
+    else:
+        raise Exception('Controller type not recognized')
+
+    if MEMORY == 'prioritized':
+        print('Using prioritized memory')
+        memory_type = NaivePrioritizedBuffer
+    elif MEMORY == 'impact_prioritized':
+        print('Using impact + prioritized memory')
+        memory_type = ImpactPrioritizedMemory
+    elif MEMORY == 'buffer':
+        print('Using basic buffer memory')
+        memory_type = Buffer
+    else:
+        raise Exception('Memory type not recognized')
+
     if WORLD == 'Hockey1v1':
         SAVE_NAME = 'Hockey1v1'
         world = Hockey1v1()                                     # Create world
         SELF_PLAY = True                                        # This world using self play
-        memory = [NaivePrioritizedBuffer(MEM_SIZE)]             # Initialize empty memory
+        memory = [memory_type(MEM_SIZE)]             # Initialize empty memory
         num_actions = world.get_num_actions()                   # Number of actions available for agent
         num_inputs = len(world.get_state()[0][0])               # Number of inputs provided
-        cpu_controller = [DDDQN(device='cuda')]                 # Create controller
+        cpu_controller = [controller(device='cuda', network_type=NETWORK, optimizer_type=OPTIMIZER)]  # Create controller
         cpu_controller[0].create_model(num_inputs=num_inputs, num_actions=num_actions[0], gamma=GAMMA, eps_end=EPS_END,
                                        eps_decay=EPS_DECAY, lr=LEARN_RATE, hn=HN_SIZE)
 
@@ -47,10 +73,10 @@ if __name__ == "__main__":
         SAVE_NAME = 'Hockey1v1Heuristic'
         world = Hockey1v1Heuristic()                            # Create world
         SELF_PLAY = False                                       # World using an heuristic opponent
-        memory = [NaivePrioritizedBuffer(MEM_SIZE)]             # Initialize empty memory
+        memory = [memory_type(MEM_SIZE, age_buffer=0.5)]             # Initialize empty memory
         num_actions = world.get_num_actions()                   # Number of actions available for agent
         num_inputs = len(world.get_state()[0][0])               # Number of inputs provided
-        cpu_controller = [DDDQN(device='cuda')]                 # Create controller
+        cpu_controller = [controller(device='cuda', network_type=NETWORK, optimizer_type=OPTIMIZER)]  # Create controller
         cpu_controller[0].create_model(num_inputs=num_inputs, num_actions=num_actions[0], gamma=GAMMA, eps_end=EPS_END,
                                        eps_decay=EPS_DECAY, lr=LEARN_RATE, hn=HN_SIZE)
 
@@ -58,11 +84,11 @@ if __name__ == "__main__":
         SAVE_NAME = 'Hockey2v2'
         world = Hockey2v2()           # Create world
         SELF_PLAY = True                                        # This world uses self play
-        mem = NaivePrioritizedBuffer(MEM_SIZE)                  # Initialize empty memory
+        mem = memory_type(MEM_SIZE)                  # Initialize empty memory
         memory = [mem, mem]                                     # Same memory for both
         num_actions = world.get_num_actions()                   # Number of actions available for agent
         num_inputs = len(world.get_state()[0][0])               # Number of inputs provided
-        cpu = DDDQN(device='cuda')                              # Create controller
+        cpu = controller(device='cuda', network_type=NETWORK, optimizer_type=OPTIMIZER)   # Create controller
         cpu.create_model(num_inputs=num_inputs, num_actions=num_actions[0], gamma=GAMMA, eps_end=EPS_END,
                                        eps_decay=EPS_DECAY, lr=LEARN_RATE, hn=HN_SIZE)
         cpu_controller = [cpu, cpu]    # Same controller for both
@@ -73,10 +99,11 @@ if __name__ == "__main__":
         SAVE_NAME = 'Hockey2v2Roles'
         world = Hockey2v2Roles()                                # Create world
         SELF_PLAY = True                                        # This world using self play
-        memory = [NaivePrioritizedBuffer(MEM_SIZE), NaivePrioritizedBuffer(MEM_SIZE)] # Initialize empty memories
+        memory = [memory_type(MEM_SIZE), memory_type(MEM_SIZE)] # Initialize empty memories
         num_actions = world.get_num_actions()                   # Number of actions available for agents
         num_inputs = len(world.get_state()[0][0])               # Number of inputs provided
-        cpu_controller = [DDDQN(device='cuda'), DDDQN(device='cuda')]  # Create controllers
+        cpu_controller = [controller(device='cuda', network_type=NETWORK, optimizer_type=OPTIMIZER),
+                          controller(device='cuda', network_type=NETWORK, optimizer_type=OPTIMIZER)]  # Create controllers
         cpu_controller[0].create_model(num_inputs=num_inputs, num_actions=num_actions[0], gamma=GAMMA, eps_end=EPS_END,
                                        eps_decay=EPS_DECAY, lr=LEARN_RATE, hn=HN_SIZE)
         cpu_controller[1].create_model(num_inputs=num_inputs, num_actions=num_actions[0], gamma=GAMMA, eps_end=EPS_END,
@@ -87,6 +114,7 @@ if __name__ == "__main__":
 
     # Currently if a PREVIOUS_MODEL is provided then it is not intended to be trained, but rather viewed.
     if PREVIOUS_MODEL is not '':
+        PREVIOUS_MODEL, _ = os.path.splitext(PREVIOUS_MODEL)      # Strip extension if necessary
         if cpu_controller.count(cpu_controller[0]) == len(cpu_controller):  # If all CPU controllers are same
             cpu_controller[0].load_model(PREVIOUS_MODEL + '.pt')  # Load model into controller
             cpu_controller[0].train_steps = EPS_DECAY * 100       # Set train steps high so a low eps is used

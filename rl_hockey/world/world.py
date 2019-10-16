@@ -30,7 +30,7 @@ class World:
     def get_object_list(self):
         return self.obj_list
 
-    def draw_world(self, high_scale=1):
+    def draw_world(self, high_scale=2):
         """
         This will render the world to an array, this array can then be drawn using Image.fromarray
         """
@@ -82,6 +82,19 @@ class World:
         Return the score of each player agent
         """
         return [p.score for p in self.player_list]
+
+    def get_impact(self):
+        """
+        Returns the potential "impact" of each player agent. For example, in the hockey games the distance of a
+        player to the puck is a rough measure of its potential impact on the game/world. It was found that a poorly
+        performing controller may have no impact on the game, and it's memory becomes filled with states that provide
+        no possibility of improving performance (e.g., the agent maintains a distance from the puck). This measure
+        of impact will be passed to the memory object, which may use it to better maintain a set of impactful memories.
+
+        This measure depends on the particular world and should be redefined by the subclasses.
+        """
+
+        return [1 for _ in self.player_list]  #
 
     def apply_control(self, state, frame_skip=False):
         """

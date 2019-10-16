@@ -6,6 +6,6 @@ __pycache__/
 # Pycharm stuff
 .idea/
 
-# Local notes and functions that need refactoring
+# Local notes, data, and functions that need refactoring
 logs/
-to_update/
+local_files/

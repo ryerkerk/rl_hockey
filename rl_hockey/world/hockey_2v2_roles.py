@@ -94,7 +94,7 @@ class Hockey2v2Roles(World):
         # Player 1 (Left team, model-in-training, expected to be more aggressive)
         p1y = np.random.choice([0.7, 0.3])
         self.obj_list.append(ControlledCircle(CircleShape, x=[0.1*w + gd, p1y*h], r=20, ang=0, mass=1,
-                                              force_mag=1000, max_v=300, color=[80, 200, 255]))
+                                              force_mag=1000, max_v=300, color=[0, 0, 255]))
         self.player_list.append(Player(obj=self.obj_list[-1], score=0, last_action=0,
                                 control_func=self.cpu_controller[0].select_action, control_map=self.control_map[0]))
 
@@ -112,7 +112,7 @@ class Hockey2v2Roles(World):
 
         # Player 4 (right agent, uses SelfPlayController containing snapshots of Player 2 model)
         self.obj_list.append(ControlledCircle(CircleShape, x=[0.9 * w - gd, (1-p1y) * h], r=20, ang=0, mass=1,
-                                              force_mag=1000, max_v=300, color=[255, 0, 0]))
+                                              force_mag=1000, max_v=300, color=[255, 200, 80]))
 
         self.player_list.append(Player(obj=self.obj_list[-1], score=0, last_action=0,
                                 control_func=self.opp_controller[1].select_action, control_map=self.control_map[1]))
@@ -146,13 +146,18 @@ class Hockey2v2Roles(World):
 
         if puck_x[0] > w - self.b - self.goal_depth + self.puck.shape.r:  # Left team scored
             self.player_list[0].score = self.player_list[0].score + 1
-            self.player_list[1].score = self.player_list[1].score + 0.25
+            self.player_list[1].score = self.player_list[1].score + 1
 
         if puck_x[0] < self.b + self.goal_depth - self.puck.shape.r:  # Right team scored
-            self.player_list[0].score = self.player_list[0].score - 0.25
+            self.player_list[0].score = self.player_list[0].score - 1
             self.player_list[1].score = self.player_list[1].score - 1
 
-        self.player_list[0].score = self.player_list[0].score*self.score_scale
+        # Large penalty if puck escapes world top or bottom.
+        if puck_x[1] < 0 or puck_x[1] > h:
+            self.player_list[0].score = self.player_list[0].score - 2
+            self.player_list[1].score = self.player_list[1].score - 2
+
+        self.player_list[0].score = self.player_list[0].score * self.score_scale
         self.player_list[1].score = self.player_list[1].score * self.score_scale
 
     def terminate_run(self):
@@ -250,3 +255,12 @@ class Hockey2v2Roles(World):
             p[:] = p[:]/500     # Scale values by size of world.
 
         return [p1_state, p2_state, p3_state, p4_state]
+
+    def get_impact(self):
+        """
+        Get potential impact of each player.
+
+        Impact defined here as w/(0.5w + d), where d is player distance to puck and w is width of world.
+        """
+        w, _ = self.world_size
+        return [w/(0.5*w + np.sqrt(np.sum((p.obj.x - self.puck.x)**2))) for p in self.player_list]
