@@ -1,3 +1,5 @@
+![](https://raw.githubusercontent.com/ryerkerk/rl_hockey/master/sample_view.gif)
+
 # rl_hockey
 An exploration of applying reinforcement learning to an air hockey style game. 
 
