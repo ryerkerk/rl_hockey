@@ -21,12 +21,12 @@ BETA_START = 0.4                # Initial beta value used by prioritized memory
 BETA_MAX = 0.5                  # Final beta value
 BETA_FRAMES = 1000              # Transition period from start to max veta value
 VIEW_RUN = False                # Set to True to visualize the model
-WORLD = 'Hockey1v1'    # World to use, available worlds:
+WORLD = 'Hockey1v1'             # World to use, available worlds:
                                 # Hockey1v1, Hockey1v1Heuristic, Hockey2v2, Hockey2v2Roles
-CONTROLLER = 'double_dqn'        # dqn, double_dqn
+ALGORITHM = 'double_dqn'        # dqn, double_dqn
 NETWORK = 'dueling_feed_forward'  # feed_forward, dueling_feed_forward
-OPTIMIZER = 'adagrad'            # adagrad, adam, rmsprop, sgd
-MEMORY = 'prioritized'          # buffer, prioritized, impact_prioritized
+OPTIMIZER = 'adagrad'             # adagrad, adam, rmsprop, sgd
+MEMORY = 'prioritized'     # buffer, prioritized, impact_prioritized
 
 # Make changes to settings here
 # Remove this line to train a new model, rather than visualizing a previous one
@@ -37,10 +37,10 @@ beta_by_frame = lambda frame_idx: min(BETA_MAX, BETA_START + frame_idx * (1.0 - 
 
 if __name__ == "__main__":
     # Set up world and required controllers.
-    if CONTROLLER == 'dqn':
+    if ALGORITHM == 'dqn':
         print('Using dqn trainer')
         controller = DQN
-    elif CONTROLLER == 'double_dqn':
+    elif ALGORITHM == 'double_dqn':
         print('Using double_dqn dqn trainer')
         controller = DoubleDQN
     else:
