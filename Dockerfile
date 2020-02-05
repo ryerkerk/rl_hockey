@@ -10,7 +10,7 @@ RUN apt-get update; \
 
 RUN apt-get install python3-tk -y
 
-RUN pip3 install awscli
+RUN pip3 install awscli pillow
 
 COPY . /usr/local/rl_hockey
 
