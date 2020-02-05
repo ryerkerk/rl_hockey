@@ -14,7 +14,8 @@ def run(memory, world, numSteps=1500, canvas=None, root=None, draw_step=1, draw_
     state = world.get_state()
     score = world.get_scores()
 
-    for i in range(numSteps):
+    i = 0
+    while i <= numSteps:
         start = time.time()
         if i % frame_skip == 0 and i > 0: # Update memory
             prev_score = score
@@ -54,4 +55,5 @@ def run(memory, world, numSteps=1500, canvas=None, root=None, draw_step=1, draw_
             # Time taken by controller can vary, calcualte time to pause based on how much time has elapsed since last frame
             time.sleep(np.max([0.00, pause_time - (end - start)]))
 
-    return memory
+        i += 1
+    return memory, i
