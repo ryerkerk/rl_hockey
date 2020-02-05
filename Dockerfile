@@ -12,6 +12,6 @@ RUN apt-get install python3-tk -y
 
 RUN pip3 install awscli
 
-COPY rl_hockey/ /usr/local/rl_hockey
+COPY . /usr/local/rl_hockey
 
 WORKDIR /usr/local/rl_hockey
