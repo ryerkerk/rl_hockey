@@ -106,9 +106,10 @@ if __name__ == "__main__":
             memory, num_frames = run(memory, world=world, numSteps=1500)    # Run an iteration
             total_frames += num_frames
             for j in range(len(cpu_controller)):                # For each CPU controller
-                for k in range(num_frames // 4):          # Run a number of training steps
+                n_train_steps = 100
+                for k in range(n_train_steps):          # Run a number of training steps
                     loss_mean += cpu_controller[j].train(memory[j], params['beta'])
-                loss_mean = loss_mean / ( num_frames // 4 )
+                loss_mean = loss_mean / ( n_train_steps )
 
         stop = time.time()
 
@@ -128,7 +129,7 @@ if __name__ == "__main__":
         score_hist.append(np.mean(world.get_scores()[:world.get_num_cpu()]))
         score_mean = np.mean(score_hist[np.max([cur_episode-100, 0]):])
         results.append([total_frames, num_frames, score_hist[-1]])
-        
+
         print('Iteration {}, memLen {}, frames {:.6f}, time {:.2f}, score {}, avg_score {:.2f}'.format(cur_episode, len(memory[0]),
               total_frames, stop-start, world.get_scores()[:world.get_num_cpu()], score_mean))
 
