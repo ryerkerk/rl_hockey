@@ -97,7 +97,7 @@ if __name__ == "__main__":
     total_frames = 0
     cur_episode = 0
     results = []
-    while total_frames <= params['total_frames']:
+    while cur_episode <= params['total_episodes']:
         start = time.time()
         loss_mean = 0
         if params['render']:                    # If we are viewing the run pass the necessary arguments

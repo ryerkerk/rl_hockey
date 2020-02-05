@@ -27,6 +27,8 @@ def parse_arg():
                         help="Model to load, set to 'none' to begin from scratch")
     parser.add_argument("--total_frames", type=float, default=20e6,
                         help="Total number of frames to run")
+    parser.add_argument("--total_episodes", type=float, default=60000,
+                        help="Total number of frames to run")
     parser.add_argument("--train_frames", type=int, default=8,
                         help="Number of frames per training step")
 
