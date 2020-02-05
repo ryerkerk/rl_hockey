@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.1-base-ubuntu18.04
+FROM ubuntu:18.04
 
 RUN apt-get update; \
     apt-get install -y software-properties-common; \
@@ -6,7 +6,7 @@ RUN apt-get update; \
     apt-get install python3.7 curl -y ; \
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py ; \
     python3 get-pip.py ; \
-    pip3 install torch torchvision numpy
+    pip3 install torch numpy
 
 RUN apt-get install python3-tk -y
 
