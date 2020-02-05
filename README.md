@@ -1,6 +1,8 @@
 # rl_hockey
 An exploration of applying reinforcement learning to an air hockey style game. 
 
+
+
 This project includes a simple rigid body physics engine, on top of which several variations of the game, or worlds, are built. These act as testbeds for several reinforcement learning models and algorithms.
 
 This project requires `numpy` and `pytorch`.
