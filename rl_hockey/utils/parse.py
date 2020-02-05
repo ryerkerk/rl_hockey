@@ -25,7 +25,7 @@ def parse_arg():
                         help="Memory buffer to use")
     parser.add_argument("--initial_model", type=str, default="none",
                         help="Model to load, set to 'none' to begin from scratch")
-    parser.add_argument("--total_frames", type=float, default=100e6,
+    parser.add_argument("--total_frames", type=float, default=20e6,
                         help="Total number of frames to run")
     parser.add_argument("--train_frames", type=int, default=8,
                         help="Number of frames per training step")

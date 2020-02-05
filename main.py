@@ -6,6 +6,7 @@ import tkinter as tk
 import numpy as np
 from rl_hockey.run import run
 from rl_hockey.utils import parse_arg
+import pickle
 
 #BETA_START = 0.4                # Initial beta value used by prioritized memory
 #BETA_MAX = 0.5                  # Final beta value
@@ -95,6 +96,7 @@ if __name__ == "__main__":
 
     total_frames = 0
     cur_episode = 0
+    results = []
     while total_frames <= params['total_frames']:
         start = time.time()
         loss_mean = 0
@@ -106,7 +108,7 @@ if __name__ == "__main__":
             for j in range(len(cpu_controller)):                # For each CPU controller
                 for k in range(num_frames // 4):          # Run a number of training steps
                     loss_mean += cpu_controller[j].train(memory[j], params['beta'])
-                loss_mean = loss_mean / ( num_frames// 4 )
+                loss_mean = loss_mean / ( num_frames // 4 )
 
         stop = time.time()
 
@@ -120,10 +122,14 @@ if __name__ == "__main__":
 
         if cur_episode % 100 == 0 and params['render'] is False:                  # Every 100 iterations save the current model(s)
             if cpu_controller.count(cpu_controller[0]) == len(cpu_controller):
-                cpu_controller[0].save_model('./models/' + params['save_name'] + '.pt')
+                cpu_controller[0].save_model('./trained_models/' + params['save_name'] + '.pt')
 
         # Get current score and provide some output
         score_hist.append(np.mean(world.get_scores()[:world.get_num_cpu()]))
         score_mean = np.mean(score_hist[np.max([cur_episode-100, 0]):])
+        results.append([total_frames, num_frames, score_hist[-1]])
+        
         print('Iteration {}, memLen {}, frames {:.6f}, time {:.2f}, score {}, avg_score {:.2f}'.format(cur_episode, len(memory[0]),
               total_frames, stop-start, world.get_scores()[:world.get_num_cpu()], score_mean))
+
+    pickle.dump(results, open('./results/' + params['save_name'] + '.p', 'wb'))
