@@ -42,7 +42,9 @@ class Hockey1v1(World):
         self.puck = None            # Will contain the puck
         self.score_scale = 10       # Scales the rewards
         self.num_cpu = 1            # Only one cpu is being trained here
+        self.self_play = True
         self.reset()
+
 
     def reset(self):
         """

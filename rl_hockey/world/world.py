@@ -25,6 +25,7 @@ class World:
         self.cpu_controller = [Controller(), Controller()]  # These will be set by set_cpu_controller.
         self.opp_controller = [Controller(), Controller()]
         self.num_cpu = 1
+        self.self_play=False
         return
 
     def get_object_list(self):
@@ -131,3 +132,10 @@ class World:
     def get_state(self):
         raise Exception('World child class needs to define get_state() function')
         pass
+
+
+    def check_self_play(self):
+        """
+        Check whether this world uses self play
+        """
+        return self.self_play

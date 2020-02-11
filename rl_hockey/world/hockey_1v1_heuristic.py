@@ -44,6 +44,7 @@ class Hockey1v1Heuristic(World):
         self.heuristic_flag = 0         # Used by heuristic controller for right agent
         self.score_scale = 10           # Scales the rewards
         self.num_cpu = 1                # Only one cpu is being trained here
+        self.self_play = False
         self.reset()
 
     def reset(self):
