@@ -1,4 +1,4 @@
-name: transfer_rl
+name: rl_hockey
 
 channels:
   - pytorch
