@@ -11,3 +11,5 @@ logs/
 local_files/
 runs/
 old_2v2/
+results/*
+!results/sample_results.p
